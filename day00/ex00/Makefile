@@ -1,5 +1,5 @@
 CC=avr-gcc
-CFLAGS=-mmcu=atmega328p -DF_CPU=1000000
+CFLAGS=-mmcu=atmega328p -DF_CPU=16000000
 
 all: hex flash
 
