@@ -11,12 +11,13 @@ int main()
 	{
 		if (pressed == 0 && (PIND & (1 << PD2)) == 0) // if the PD2 switch button is pressed
 		{
-			PORTB	=	((~(PORTB & (1 << PB0))) & (1 << PB0)); // to write data on pin PB0 port B 
 			pressed = 1;
-			_delay_ms(100);
+			PORTB ^= (1 << PB0); // invert the value of the led PB0
 		}
-		else if ((PIND & (1 << PD2)) != 0)
+		else if (pressed == 1 && (PIND & (1 << PD2)) != 0) // else if PD2 is not pressed
+		{
 			pressed = 0;
-		// _delay_ms(10); // adding delay of 10 ms to prevent overheat
+		}
+		_delay_ms(10); // adding delay of 10 ms to prevent overheat and bounce
 	}
 }
