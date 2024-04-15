@@ -9,11 +9,11 @@ int main()
 	{
 		if ((PIND & (1 << PD2)) == 0) // if the PD2 switch button is pressed
 		{
-			PORTB	=	(1 << PB0); // to write data on pin PB0 port B 
+			PORTB	|=	(1 << PB0); // to write data on pin PB0 port B 
 		}
-		else if (PORTB & (1 << PB0)) // if the PD2 is not pressed and led D1 is on
+		else if (PORTB & (1 << PB0) == 1) // if the PD2 is not pressed and led D1 is on
 		{
-			PORTB	=	(0 << PB0); // to write data on port B pin 0
+			PORTB	&=	~(1 << PB0); // to remove data write on PB0
 		}
 		_delay_ms(10); // adding delay of 10 ms to prevent overheat
 	}
