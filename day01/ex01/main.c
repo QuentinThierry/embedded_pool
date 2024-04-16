@@ -16,10 +16,10 @@ int main()
 	SET(TCCR1A, COM1A0); // // set toggle OC1A on compare match bit 2
 
 	// set counter mode operation -> doc : 16.11.1 - table 16-4
-	RESET(TCCR1B, WGM13);
-	SET(TCCR1B, WGM12);
-	RESET(TCCR1A, WGM11);
-	RESET(TCCR1A, WGM10);
+	RESET(TCCR1B, WGM13); // reset bit 1
+	SET(TCCR1B, WGM12); // set bit 2
+	RESET(TCCR1A, WGM11); // reset bit 3
+	RESET(TCCR1A, WGM10); // reset bit 4
 
 	OCR1A = 31250;
 
