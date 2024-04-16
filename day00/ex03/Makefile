@@ -13,8 +13,10 @@ all: hex flash
 
 hex: $(NAME).hex
 
-$(NAME).hex: $(OBJ)
+$(NAME).bin: $(OBJ) Makefile
 	$(CC) $(CFLAGS) $(OBJ) -o $(NAME).bin
+
+$(NAME).hex: $(NAME).bin
 	avr-objcopy -O ihex $(NAME).bin $(NAME).hex
 
 flash: hex
