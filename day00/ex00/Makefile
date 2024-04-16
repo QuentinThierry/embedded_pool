@@ -22,3 +22,5 @@ flash:
 
 clean:
 	rm -rf $(NAME).bin $(NAME).hex $(OBJ)
+
+.PHONY: all hex flash clean
