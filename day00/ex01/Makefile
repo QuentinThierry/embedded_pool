@@ -11,7 +11,9 @@ OBJ=$(SRC:.c=.o)
 
 all: hex flash
 
-hex: $(OBJ)
+hex: $(NAME).hex
+
+$(NAME).hex: $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -o $(NAME).bin
 	avr-objcopy -O ihex $(NAME).bin $(NAME).hex
 
