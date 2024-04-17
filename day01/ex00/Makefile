@@ -6,14 +6,14 @@ SRC=	\
 
 OBJ=$(SRC:.c=.o)
 
-%.o:%.c
+%.o:%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 all: hex flash
 
 hex: $(NAME).hex
 
-$(NAME).bin: $(OBJ) Makefile
+$(NAME).bin: $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -o $(NAME).bin
 
 $(NAME).hex: $(NAME).bin
