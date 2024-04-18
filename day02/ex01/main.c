@@ -40,7 +40,7 @@ void	init_timer1()
 	SET(TCCR1A, WGM11); // set bit 1
 	RESET(TCCR1A, WGM10); // reset bit 0
 
-	ICR1 = BLINK_SPEED;
+	ICR1 = BLINK_SPEED; // set TOP value to ICR1 (1 Hz)
 	OCR1A = 0;
 }
 
@@ -70,6 +70,5 @@ int main()
 	init_timer0();
 	init_timer1();
 	init_interrupt();
-	// int	opacity = 0;
 	while (1);
 }
