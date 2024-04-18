@@ -1,11 +1,7 @@
 #include "main.h"
 
-volatile uint8_t	is_pressed = 0;
-
 ISR(INT0_vect)
 {
-	is_pressed = 1;
-	RESET(EIMSK, INT0);
 	TOGGLE(PORTB, PB0);
 }
 
@@ -21,15 +17,5 @@ int main()
 
 	SET(EIMSK, INT0); // set external pin interrupt enable
 
-	while (1)
-	{
-		if (is_pressed == 1)
-		{
-			TOGGLE(PORTB, PB1);
-			
-			_delay_ms(500);
-			is_pressed = 0;
-			SET(EIMSK, INT0);
-		}
-	}
+	while (1);
 }
