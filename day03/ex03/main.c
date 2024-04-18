@@ -1,5 +1,7 @@
 #include "main.h"
 
+#define ONE_SEC_TIMER1 15625
+
 void	uart_init()
 {
 	const uint16_t	baud = F_CPU / (UART_BAUDRATE * 16);
@@ -25,37 +27,32 @@ void	uart_init()
 
 void	uart_tx(char c)
 {
-	while (!(UCSR0A & (1 << UDRE0))); // wait data to be transmit
+	while (!(UCSR0A & (1 << UDRE0))); // wait data to be ready to transmit
 	UDR0 = c;
 }
 
 char	uart_rx(void)
 {
-	while (!(UCSR0A & (1 << RXC0)));
+	while (!(UCSR0A & (1 << RXC0))); // wait data to be ready to read
 	return UDR0;
 }
 
-char	to_lower(char c)
+char	swap_case(char c)
 {
-	if (c >= 'a')
-		c -= ('a' - 'A');
-	else if (c >= 'A')
-		c += ('a' - 'A');
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+		c ^= (1 << 5);
 	return c;
 }
 
 ISR(USART_RX_vect)
 {
 	char c = uart_rx();
-	uart_tx(to_lower(c));
+	uart_tx(swap_case(c));
 }
 
 int main()
 {
 	SET(SREG, 7);	// activate global interrupt
 	uart_init();
-	while (1)
-	{
-		
-	}
+	while (1);
 }
