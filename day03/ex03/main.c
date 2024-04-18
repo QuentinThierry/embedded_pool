@@ -1,7 +1,5 @@
 #include "main.h"
 
-#define ONE_SEC_TIMER1 15625
-
 void	uart_init()
 {
 	const uint16_t	baud = F_CPU / (UART_BAUDRATE * 16);
