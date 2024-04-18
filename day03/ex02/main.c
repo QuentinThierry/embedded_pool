@@ -33,7 +33,6 @@ void	uart_tx(char c)
 char	uart_rx(void)
 {
 	while (!(UCSR0A & (1 << RXC0)));
-	TOGGLE(PORTB, PB0);
 	return UDR0;
 }
 
