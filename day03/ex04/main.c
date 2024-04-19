@@ -85,7 +85,7 @@ void	check_error_pass(uint8_t cursor, char c, volatile uint8_t *nb_error_pass)
 #define NB_LED_FLASH 15
 void	flash_lights(bool is_ok)
 {
-	RESET(PORTD, PD3);
+	RESET(PORTD, PD6);
 	RESET(PORTD, PD5);
 	uint8_t	i = 0;
 	while (i < NB_LED_TURN)
