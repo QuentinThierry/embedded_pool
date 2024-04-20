@@ -47,34 +47,28 @@ void	uart_printstr(const char *str)
 	}
 }
 
-void	print_hex_value(uint8_t data)
+void	i2c_printhex(uint8_t data)
 {
 	const char base[] = "0123456789ABCDEF";
-	uart_printstr("0x");
+	// uart_printstr("0x");
 	uart_tx(base[(data & 0xf0) >> 4]);
 	uart_tx(base[(data & 0xf)]);
 }
 
 void	i2c_start_write()
 {
-	// set start condition
-	// uart_printstr("Sending start in write mode\r\n");
-
 	SET(TWCR, TWSTA);
 	SET(TWCR, TWINT);
 	while (!(TWCR & (1<<TWINT)))
 		;
-	if (TW_STATUS == TW_START || TW_STATUS == TW_REP_START)
-		/* uart_printstr("OK!\r\n") */;
-	else
+	if (TW_STATUS != TW_START && TW_STATUS != TW_REP_START)
 	{
 		uart_printstr("ERROR! : ");
-		print_hex_value(TW_STATUS);
+		i2c_printhex(TW_STATUS);
 		uart_printstr("\r\n");
 	};
 	
-	// uart_printstr("Sending slave address...\r\n");
-	// set SLA+W/R mode
+	// set SLA+W mode
 	TWDR = (0x38 << 1); // set ATH20 slave address
 	SET(TWCR, TWINT); // clear flag
 
@@ -83,80 +77,110 @@ void	i2c_start_write()
 	if (TW_STATUS != TW_MT_SLA_ACK)
 	{
 		uart_printstr("ERROR! : ");
-		print_hex_value(TW_STATUS);
+		i2c_printhex(TW_STATUS);
 		uart_printstr("\r\n");
 	}
-	else
-		/* uart_printstr("OK!\r\n") */;
 	RESET(TWCR, TWSTA);
 }
 
 void	i2c_start_read()
 {
 	// set start condition
-	// uart_printstr("Sending start in read mode\r\n");
-
 	SET(TWCR, TWSTA);
 	SET(TWCR, TWINT);
 	while (!(TWCR & (1<<TWINT)))
 		;
-	if (TW_STATUS == TW_START || TW_STATUS == TW_REP_START)
-		/* uart_printstr("OK!\r\n") */;
-	else
+	if (TW_STATUS != TW_START && TW_STATUS != TW_REP_START)
 	{
 		uart_printstr("ERROR! : ");
-		print_hex_value(TW_STATUS);
+		i2c_printhex(TW_STATUS);
 		uart_printstr("\r\n");
 	}
 	
-	// uart_printstr("Sending slave address...\r\n");
-	// set SLA+W/R mode
+	// set SLA+R mode
 	TWDR = (0x38 << 1) + 1; // set ATH20 slave address
 	SET(TWCR, TWINT); // clear flag
 
-	SET(TWCR, TWEA);
 	while (!(TWCR & (1<<TWINT)))
 		;
 	if (TW_STATUS != TW_MR_SLA_ACK)
 	{
-		/* uart_printstr("ERROR! : ") */;
-		print_hex_value(TW_STATUS);
+		uart_printstr("ERROR! : ");
+		i2c_printhex(TW_STATUS);
 		uart_printstr("\r\n");
 	}
-	else
-		/* uart_printstr("OK!\r\n") */;
 	RESET(TWCR, TWSTA);
+	SET(TWCR, TWEA);
 }
 
 void	i2c_stop()
 {
 	TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
-	uart_printstr("Stopping\r\n");
 }
 
 void	i2c_write(unsigned char data)
 {
 	TWDR = data;
+	SET(TWCR, TWINT);
 	while (!(TWCR & (1<<TWINT)))
 		;
 	if (TW_STATUS != TW_MT_DATA_ACK)
 		uart_printstr("ERROR!\r\n");
-	SET(TWCR, TWINT);
 }
 
-void	i2c_read()
+char	i2c_read(bool ack)
+{
+	if (ack)
+		SET(TWCR, TWEA);
+	else
+		RESET(TWCR, TWEA);
+	SET(TWCR, TWINT);
+	while (!(TWCR & (1<<TWINT)))
+		;
+	if (TW_STATUS != (ack ? TW_MR_DATA_ACK : TW_MR_DATA_NACK))
+		uart_printstr("ERROR!\r\n");
+	unsigned char c = TWDR;
+	return c;
+}
+
+void	print_hex_value()
 {
 	for (uint8_t i = 0; i<6; i++) {
 		while (!(TWCR & (1<<TWINT)))
 			;
-		print_hex_value(TWDR);
+		if (i == 0 && (TWDR & 0x80) == 0x80)
+		{
+			i--;
+			continue;
+		}
+		i2c_printhex(TWDR);
 		uart_printstr(" ");
-		SET(TWCR, TWINT);
 		SET(TWCR, TWEA);
+		SET(TWCR, TWINT);
 	}
 	uart_printstr("\r\n");
 	RESET(TWCR, TWEA);
 	SET(TWCR, TWINT);
+}
+
+void	calibrate()
+{
+	i2c_start_read();
+	_delay_ms(100);
+	if ((i2c_read(false) & 0b1000) != 0b1000) // need calibration
+	{
+		uart_printstr("Calibrating...\r\n");
+		i2c_stop();
+		_delay_ms(100);
+		i2c_start_write();
+		_delay_ms(100);
+		i2c_write(0xBE);
+		i2c_write(0x08);
+		i2c_write(0x00);
+	}
+	i2c_stop();
+	_delay_ms(100);
+	i2c_start_write();
 }
 
 int	main()
@@ -164,35 +188,27 @@ int	main()
 	i2c_init();
 	uart_init();
 
-	_delay_ms(40);
+	_delay_ms(100);
+	calibrate();
+	_delay_ms(100);
 	i2c_start_write();
-	i2c_write(0x71);
-	_delay_ms(150);
-	i2c_start_read();
-	i2c_read();
-	// i2c_start_write();
-	// i2c_write(0xBE);
-	// i2c_write(0x08);
-	// i2c_write(0x00);
-	_delay_ms(150);
+	_delay_ms(100);
 
-	
 	while (1)
 	{
-		i2c_start_write();
 		i2c_write(0xAC);
 		i2c_write(0x33);
 		i2c_write(0x00);
-		_delay_ms(150);
+		_delay_ms(100);
+		i2c_stop();
+		_delay_ms(100);
 		i2c_start_read();
-		_delay_ms(1000);
-		i2c_read();
-		// SET(TWCR, TWEA);
-		// _delay_ms(200);
-		// uart_printstr(" : ");
-		// print_hex_value((TW_STATUS));
-		// uart_printstr("\r\n");
+		print_hex_value();
+		_delay_ms(100);
+		i2c_stop();
+		_delay_ms(100);
+		i2c_start_write();
 		_delay_ms(100);
 	}
-	// i2c_stop();
+	i2c_stop();
 }
