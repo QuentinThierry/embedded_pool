@@ -89,12 +89,38 @@ void	write_header(uint8_t *addr, uint16_t id, uint16_t len, bool is_free)
 	eeprom_update_word((void *)addr, len);
 }
 
+bool	check_id_already_used(uint16_t id)
+{
+	uint8_t *addr = 0;
+
+	while ((size_t)addr < MEMORY_SIZE )
+	{
+		if (!check_is_magic_number(addr))
+		{
+			return false;
+		}
+		if (check_magic_is_free(addr))
+		{
+			addr += HEADER_ALL + get_chunk_len(addr);
+			continue ;
+		}
+		else if (get_chunk_id(addr) == id)
+		{
+			return true;
+		}
+		addr += HEADER_ALL + get_chunk_len(addr);
+	}
+	return false;
+}
+
 bool eepromalloc_write(uint16_t id, void *buffer, uint16_t length)
 {
 	// find a free space -> find magic number + free
 	uint8_t		*addr = 0;
 	uint16_t	previous_len = 0;
 
+	if (check_id_already_used(id)) // if already in use, quit
+		return false;
 	while ((size_t)addr < MEMORY_SIZE - length - 5)
 	{
 		if (!check_is_magic_number(addr)) // if not a magic number
@@ -151,7 +177,7 @@ bool eepromalloc_read(uint16_t id, void *buffer, uint16_t length)
 			addr += HEADER_ALL + get_chunk_len(addr);
 		}
 	}
-	if ((size_t)addr >= MEMORY_SIZE - length - 5)
+	if ((size_t)addr >= MEMORY_SIZE - 5)
 		return false;
 	return true;
 }
@@ -168,7 +194,7 @@ bool eepromalloc_free(uint16_t id)
 		}
 		if (check_magic_is_free(addr))
 		{
-			addr += HEADER_LEN + get_chunk_len(addr);
+			addr += HEADER_ALL + get_chunk_len(addr);
 			continue ;
 		}
 		else
@@ -238,6 +264,8 @@ int	main()
 		}
 	}
 
+	if (!eepromalloc_write(0, "touta\r\n", 7))
+		uart_printstr("ERROR WRITE\r\n");
 	if (!eepromalloc_write(0, "touta\r\n", 7))
 		uart_printstr("ERROR WRITE\r\n");
 	if (!eepromalloc_write(2, "salut\r\n", 7))
