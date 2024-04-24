@@ -240,10 +240,6 @@ int	main()
 {
 	uart_init();
 
-	char empty[100] = {0};
-	safe_eeprom_write(empty, 0, 100);
-	char c = 1;
-	
 	uart_printstr("> ");
 
 	while (1)

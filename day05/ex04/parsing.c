@@ -7,13 +7,13 @@ bool	parse_write(char *str)
 	char c = 0;
 
 	if (uart_rtx() != 'R')
-		is_ok = false;
+		return false;
 	if (uart_rtx() != 'I')
-		is_ok = false;
+		return false;
 	if (uart_rtx() != 'T')
-		is_ok = false;
+		return false;
 	if (uart_rtx() != 'E')
-		is_ok = false;
+		return false;
 	c = uart_rtx();
 	while (c != ' ')
 	{
@@ -39,6 +39,12 @@ bool	parse_write(char *str)
 		i++;
 	}
 	str[i] = 0;
+	if (i == 0)
+	{
+		uart_printstr("\r\nEmpty field\r\n");
+		return false;
+	}
+	
 	i++;
 	c = uart_rtx();
 	while (c == ' ')
@@ -53,6 +59,11 @@ bool	parse_write(char *str)
 			return false;
 		str[i] = c;
 		i++;
+	}
+	if (i == 1)
+	{
+		uart_printstr("\r\nEmpty field\r\n");
+		return false;
 	}
 	return is_ok;
 }
@@ -92,11 +103,11 @@ bool	parse_read(char *str)
 	char c = 0;
 
 	if (uart_rtx() != 'E')
-		return is_ok = false;
+		return false;
 	if (uart_rtx() != 'A')
-		return is_ok = false;
+		return false;
 	if (uart_rtx() != 'D')
-		return is_ok = false;
+		return false;
 	c = uart_rtx();
 	while (c != ' ')
 	{
@@ -123,6 +134,8 @@ bool	parse_read(char *str)
 		i++;
 	}
 	str[i] = 0;
+	if (i == 0)
+		return false;
 	return is_ok;
 }
 
@@ -146,15 +159,15 @@ bool	parse_forget(char *str)
 	char c = 0;
 
 	if (uart_rtx() != 'O')
-		return is_ok = false;
+		return false;
 	if (uart_rtx() != 'R')
-		return is_ok = false;
+		return false;
 	if (uart_rtx() != 'G')
-		return is_ok = false;
+		return false;
 	if (uart_rtx() != 'E')
-		return is_ok = false;
+		return false;
 	if (uart_rtx() != 'T')
-		return is_ok = false;
+		return false;
 	c = uart_rtx();
 	while (c != ' ')
 	{
@@ -178,6 +191,8 @@ bool	parse_forget(char *str)
 		str[i] = c;
 		i++;
 	}
+	if (i == 0)
+		return false;
 	return is_ok;
 }
 
