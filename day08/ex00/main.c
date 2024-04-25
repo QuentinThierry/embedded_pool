@@ -28,14 +28,14 @@ void	write_spi(uint8_t byte)
 
 void	send_start()
 {
-	for (uint8_t i = 0; i < 3; i++) {
+	for (uint8_t i = 0; i < 4; i++) {
 		write_spi(0x0);
 	}
 }
 
 void	send_end()
 {
-	for (uint8_t i = 0; i < 3; i++) {
+	for (uint8_t i = 0; i < 4; i++) {
 		write_spi(0xff);
 	}
 }
